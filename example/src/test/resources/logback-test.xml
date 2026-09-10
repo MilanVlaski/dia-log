@@ -1,9 +1,14 @@
+<!--
+    Test config: no appenders configured on purpose. The example Main
+    attaches its own console JsonAppender programmatically, so this file
+    only suppresses the rolling file appender from logback.xml during tests
+    (avoids writing logs/example.jsonl from the test run).
+    The status listener keeps logback's configuration chatter on stderr so
+    the integration test can assert stdout is pure JSON Lines (without any
+    listener, logback's LOGBACK-292 fallback would dump the configuration
+    status list to stdout whenever the config produces a WARN or ERROR).
+-->
 <configuration>
-    <!--
-        Test config: no appenders configured on purpose. The example Main
-        attaches its own console JsonAppender programmatically, so this file
-        only suppresses the rolling file appender from logback.xml during tests
-        (avoids writing logs/example.jsonl from the test run).
-    -->
+    <statusListener class="ch.qos.logback.core.status.OnErrorConsoleStatusListener"/>
     <root level="DEBUG"/>
 </configuration>

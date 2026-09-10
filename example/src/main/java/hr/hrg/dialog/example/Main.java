@@ -23,10 +23,10 @@ public class Main {
         MDC.put("userId", "alice");
         MDC.put("tenant", "acme-corp");
 
-        System.out.println("=== Dia-Log: JSON Logging ===");
-        System.out.println("Waiting 2 seconds for startup...");
+        banner("=== Dia-Log: JSON Logging ===");
+        banner("Waiting 2 seconds for startup...");
         sleep(2000);
-        System.out.println("=== Logging at all levels ===");
+        banner("=== Logging at all levels ===");
 
         log.trace("This is a TRACE message (may not appear if root level is DEBUG)");
         log.debug("This is a DEBUG message");
@@ -34,8 +34,8 @@ public class Main {
         log.warn("This is a WARN message");
         log.error("This is an ERROR message");
 
-        System.out.println();
-        System.out.println("=== Structured key/value pairs (SLF4J 2.0 fluent API) ===");
+        banner();
+        banner("=== Structured key/value pairs (SLF4J 2.0 fluent API) ===");
 
         // kv() is a shorthand for addKeyValue()
         log.atInfo()
@@ -52,8 +52,8 @@ public class Main {
             .kv("fallback", "cache")
             .log("Rate limit approaching");
 
-        System.out.println();
-        System.out.println("=== {key} placeholder in the message ===");
+        banner();
+        banner("=== {key} placeholder in the message ===");
 
         // You can embed {key} placeholders in the message that reference the
         // key/value pairs (and MDC entries) attached to the same event. Each value
@@ -83,8 +83,8 @@ public class Main {
             .kv("path", "/api/orders")
             .log("User {userId} from tenant {tenant} requested {path} (request {requestId})");
 
-        System.out.println();
-        System.out.println("=== stackWhenTraceEnabled() ===");
+        banner();
+        banner("=== stackWhenTraceEnabled() ===");
 
         // Conditional call stack: a synthetic throwable is attached only when TRACE is enabled.
         // With root DEBUG, no stack is emitted; switch root to TRACE to see errClass/errHash.
@@ -92,8 +92,8 @@ public class Main {
             .kv("state", "PAID")
             .log("Change state to {state}");
 
-        System.out.println();
-        System.out.println("=== Parameterized logging ===");
+        banner();
+        banner("=== Parameterized logging ===");
 
         // SLF4J positional {} parameters are still interpolated at log time, and are
         // NOT stored as top-level JSON fields. Use the fluent .kv() API + {key}
@@ -101,8 +101,8 @@ public class Main {
         log.info("User {} logged in from IP {}", "alice", "192.168.1.42");
         log.warn("Disk usage at {}/{} MB", 850, 1024);
 
-        System.out.println();
-        System.out.println("=== Exception logging ===");
+        banner();
+        banner("=== Exception logging ===");
 
         try {
             riskyOperation();
@@ -110,8 +110,8 @@ public class Main {
             log.error("Operation failed: {}", e.getMessage(), e);
         }
 
-        System.out.println();
-        System.out.println("=== Nested cause exception ===");
+        banner();
+        banner("=== Nested cause exception ===");
 
         try {
             outerOperation();
@@ -125,12 +125,12 @@ public class Main {
 
         MDC.clear();
 
-        System.out.println();
-        System.out.println("=== Done! Check the JSON output above ===");
-        System.out.println("Each line is a valid JSON object with fields: ts, level, logger, thread, msg, kv, errClass, errMessage, stack, errHash");
-        System.out.println("Messages may contain {key} placeholders that reference key/value or MDC fields.");
-        System.out.println("They are written as-is; use jlx with message_expand = curly to expand them (see jlx.conf).");
-        System.out.println("Try: java -jar example/target/dia-log-example-1.0.0-SNAPSHOT.jar | jq .");
+        banner();
+        banner("=== Done! Check the JSON output above ===");
+        banner("Each line is a valid JSON object with fields: ts, level, logger, thread, msg, your key/value pairs, and (with exceptions) errClass, errMessage, stack, errHash");
+        banner("Messages may contain {key} placeholders that reference key/value or MDC fields.");
+        banner("They are written as-is; use jlx with message_expand = curly to expand them (see example/jlx.conf).");
+        banner("Try: jlx -c example/jlx.conf logs/example.jsonl");
     }
 
     static void riskyOperation() {
@@ -163,6 +163,18 @@ public class Main {
         // installs a no-op encoder itself when none is configured.
         appender.start();
         root.addAppender(appender);
+    }
+
+    /**
+     * Human-readable section banners go to stderr so that stdout stays a clean
+     * JSON Lines stream (pipe-friendly: {@code Main | jlx ...} or redirection).
+     */
+    private static void banner(String message) {
+        System.err.println(message);
+    }
+
+    private static void banner() {
+        System.err.println();
     }
 
     private static void sleep(long ms) {

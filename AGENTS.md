@@ -1,5 +1,10 @@
 # Dia-Log Agent Guidelines
 
+# temporary outputs
+
+Strictly use .exp fodler to place outputs caught by commandline when chosing where to store those temporary files.
+
+
 ## Documentation Discipline — Early Phase (No External Users)
 
 **This project is still in early phase. There are no external users, and no published contracts require change notifications.** When writing up inconsistencies, regressions, or proposed changes: do not generate documentation noise about "previous user impact" or "breaking for existing consumers." If a change *could* affect a hypothetical consumer, state the actual code behavior factually (e.g., "`errHash` is emitted as a flat top-level JSON key") and move on. Reserve impact language for genuine multi-user scenarios — not an internal logging library with no published API consumers.

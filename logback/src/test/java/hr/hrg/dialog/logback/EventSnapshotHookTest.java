@@ -176,7 +176,7 @@ class EventSnapshotHookTest {
     void snapshot_blankClassName_disablesHook() {
         assertSame(NoopEventSnapshotHandler.INSTANCE, JsonAppender.instantiateEventHandler(""));
         assertSame(NoopEventSnapshotHandler.INSTANCE, JsonAppender.instantiateEventHandler(null));
-        appender.setEventSnapshotHandler("");
+        appender.setEventSnapshotHandlerClass("");
         appender.doAppend(event("ok"));
         assertTrue(out.toString(StandardCharsets.UTF_8).contains("\"msg\":\"ok\""));
     }
@@ -184,19 +184,19 @@ class EventSnapshotHookTest {
     @Test
     void snapshot_nonExistentClass_throws() {
         assertThrows(IllegalArgumentException.class,
-                () -> appender.setEventSnapshotHandler("no.such.Class"));
+                () -> appender.setEventSnapshotHandlerClass("no.such.Class"));
     }
 
     @Test
     void snapshot_wrongTypeClass_throws() {
         assertThrows(IllegalArgumentException.class,
-                () -> appender.setEventSnapshotHandler("java.lang.String"));
+                () -> appender.setEventSnapshotHandlerClass("java.lang.String"));
     }
 
     @Test
     void snapshot_classNameConfig_instantiatesHandler() {
         RecordingHandler.reset();
-        appender.setEventSnapshotHandler(RecordingHandler.class.getName());
+        appender.setEventSnapshotHandlerClass(RecordingHandler.class.getName());
         appender.doAppend(event("via class name"));
 
         assertEquals(1, RecordingHandler.received.size(), "class-name handler must receive snapshots");

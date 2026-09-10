@@ -64,8 +64,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   forwarding to an HTTP endpoint or a log-tracking UI. The snapshot is always a
   fresh allocation (it may be retained, fanned out to multiple outputs, or handed
   to another thread). Configurable programmatically or via
-  `<eventSnapshotHandler>` in logback.xml (no-arg class name, like
+  `<eventSnapshotHandlerClass>` in logback.xml (no-arg class name, like
   `<stackTraceFilter>`).
+
+### Fixed
+
+- `JsonAppender` / `JsonAppenderRolling` now flush the output stream after the
+  per-event bulk write, honoring `immediateFlush` (default `true`) like logback's
+  own `OutputStreamAppender`. The `writeOut()` overrides bypass logback's write
+  path, so previously events could sit in the file stream's 8 KiB buffer until
+  rollover or JVM shutdown — a short run left the log file empty.
+- Renamed the logback.xml class-name property from `<eventSnapshotHandler>` to
+  `<eventSnapshotHandlerClass>` (programmatic
+  `setEventSnapshotHandler(handler)` is unchanged). Two `setEventSnapshotHandler`
+  overloads made logback's `BeanDescriptionFactory` emit a WARN status, which
+  triggers logback 1.5.x's LOGBACK-292 fallback: the entire configuration status
+  list dumped to stdout, corrupting the JSON Lines stream.
+- `example` module: section banners go to stderr (stdout is pure JSON Lines);
+  `logback.xml` / `logback-test.xml` register an stderr status listener (the
+  `status="OFF"` configuration attribute is a no-op in logback 1.5.38); the run
+  story now uses [`jlx`](https://github.com/hrgdavor/zig-jlx) instead of `jq`;
+  `jlx.conf` omits `paths` so its `[folders]` section is the fallback matched in
+  file mode (relative `paths` never match).
 
 ## [1.0.0] - 2026-08-11
 

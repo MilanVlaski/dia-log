@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    An explicit status listener sends logback's own configuration chatter
+    (the |-INFO / |-WARN status lines) to stderr, keeping the app's stdout a
+    pure JSON Lines stream that can be piped directly into jlx or redirected
+    to a file. Without any status listener, logback's LOGBACK-292 fallback
+    would dump the entire configuration status list to stdout whenever the
+    config produces a WARN or ERROR.
+-->
 <configuration scan="true" scanPeriod="30 seconds">
+
+    <statusListener class="ch.qos.logback.core.status.OnErrorConsoleStatusListener"/>
 
     <!--
         JSON rolling file appender using JsonAppenderRolling + JsonLogWriter.

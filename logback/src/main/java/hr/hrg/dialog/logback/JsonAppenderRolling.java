@@ -129,11 +129,11 @@ public class JsonAppenderRolling extends RollingFileAppender<ILoggingEvent> {
      * Same as {@link #setEventSnapshotHandler(EventSnapshotHandler)} but takes the
      * fully-qualified class name of a no-arg-constructible
      * {@link EventSnapshotHandler} implementation, for logback.xml (see
-     * {@link JsonAppender#setEventSnapshotHandler(String)} for the XML shape).
+     * {@link JsonAppender#setEventSnapshotHandlerClass(String)} for the XML shape).
      * A {@code null} or blank value disables the hook (resets to
      * {@link NoopEventSnapshotHandler#INSTANCE}).
      */
-    public void setEventSnapshotHandler(String handlerClassName) {
+    public void setEventSnapshotHandlerClass(String handlerClassName) {
         this.eventSnapshotHandler = JsonAppender.instantiateEventHandler(handlerClassName);
     }
 
@@ -163,6 +163,14 @@ public class JsonAppenderRolling extends RollingFileAppender<ILoggingEvent> {
         eventBuffer.setPosition(pos + 1);
         // One bulk write of the whole event (buffer reuses its array across events).
         eventBuffer.writeTo(activeStreamLoc);
+        // logback hands file appenders a buffered stream (ResilientFileOutputStream
+        // over an 8 KiB BufferedOutputStream) and this override bypasses
+        // OutputStreamAppender's own per-event flush, so flush here to keep the
+        // standard immediateFlush=true semantics: the event reaches the real file
+        // in the same pass, and is never stranded in the buffer across an exit.
+        if (isImmediateFlush()) {
+            activeStreamLoc.flush();
+        }
     }
 
 }

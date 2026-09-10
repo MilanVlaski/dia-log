@@ -210,6 +210,8 @@ Dia-Log writes JSON Lines, so you can read, filter, and analyze the output with 
 ```ini
 ; jlx config tailored to Dia-Log JSON output
 [folders]
+; absolute path prefix of the directory the log file lives in — or omit
+; `paths` entirely to make this section the fallback for any log file
 paths     = /path/to/your/logs
 timestamp = ts
 level     = level
@@ -322,7 +324,7 @@ Or configure it from `logback.xml` with the fully-qualified name of a no-arg-con
 
 ```xml
 <appender name="JSON" class="hr.hrg.dialog.logback.JsonAppender">
-    <eventSnapshotHandler>com.example.MySnapshotCollector</eventSnapshotHandler>
+    <eventSnapshotHandlerClass>com.example.MySnapshotCollector</eventSnapshotHandlerClass>
 </appender>
 ```
 
@@ -335,6 +337,28 @@ for the full contract.
 ```bash
 mvn clean install
 ```
+
+## Version management
+
+The root [`pom.xml`](pom.xml) is the **single source of truth** for the project
+version. Submodules do not manage their own version — they inherit it through
+their `<parent>` reference (and depend on each other via `${project.version}`),
+so a release version lives in exactly one place. To bump it:
+
+1. Edit the `<version>` element in the root `pom.xml` by hand.
+2. Run the sync script:
+
+   ```bash
+   bun src/build/version.js
+   ```
+
+   The script reads the version from the root pom and rewrites the
+   `<parent><version>` reference in every module listed in the root's
+   `<modules>` section — plus a module's own `<version>`, if it declares one.
+   It never modifies the root pom, leaves dependency and plugin versions
+   untouched, and is idempotent (re-running with everything in sync changes
+   nothing). Verify with `git diff` and commit the root pom together with the
+   synced module poms.
 
 ## Publishing
 

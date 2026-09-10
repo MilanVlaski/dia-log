@@ -34,18 +34,22 @@ Then:
 
 ```bash
 java --add-opens java.base/java.lang=ALL-UNNAMED \
-  -cp "example/target/classes;core/target/classes;logback/target/classes;$(cat example-cp.txt)" \
+  -cp "example/target/classes;core/target/classes;logback/target/classes;$(cat example/example-cp.txt)" \
   hr.hrg.dialog.example.Main
 ```
 
 The example waits briefly on startup, then emits a series of JSON log lines to the console.
 
-To pretty-print the JSON output through `jq`:
+Human-readable section banners are written to **stderr**, so **stdout is a clean
+JSON Lines stream** you can pipe or redirect. To display the output as formatted
+text (with `{key}` placeholders expanded), pipe it through
+[`jlx`](https://github.com/hrgdavor/zig-jlx) using this module's
+[`jlx.conf`](jlx.conf):
 
 ```bash
 java --add-opens java.base/java.lang=ALL-UNNAMED \
-  -cp "example/target/classes;core/target/classes;logback/target/classes;$(cat example-cp.txt)" \
-  hr.hrg.dialog.example.Main | jq .
+  -cp "example/target/classes;core/target/classes;logback/target/classes;$(cat example/example-cp.txt)" \
+  hr.hrg.dialog.example.Main | jlx -c example/jlx.conf
 ```
 
 ## Configuration
@@ -131,17 +135,17 @@ message_expand = curly
 ```
 
 ```bash
-# Pretty-print the file with {key} placeholders expanded
-jlx -c jlx.conf logs/example.jsonl
+# Pretty-print the file with {key} placeholders expanded (from the repo root)
+jlx -c example/jlx.conf logs/example.jsonl
 
 # Follow live output
-jlx -c jlx.conf -f logs/example.jsonl
+jlx -c example/jlx.conf -f logs/example.jsonl
 ```
 
 With `message_expand = curly`, the line above renders as:
 
 ```
-2025-06-01 12:34:56   INFO hr.hrg.dialog.example.Main | Request GET /api/users -> 200
+2025-06-01 12:34:56 [INFO ] hr.hrg.dialog.example.Main | Request GET /api/users -> 200
 ```
 
 Without `message_expand`, the `{method}`, `{path}`, and `{statusCode}` tokens appear literally in the message. The raw JSON file is never modified — expansion happens only in `jlx`'s display output.

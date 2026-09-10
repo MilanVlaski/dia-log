@@ -35,9 +35,11 @@ class ExampleIntegrationTest {
         }
 
         String output = capture.toString(StandardCharsets.UTF_8);
+        // Stdout must be pure JSON Lines: section banners go to stderr, so every
+        // non-blank stdout line has to parse as a JSON object.
         List<String> jsonLines = output.lines()
                 .map(String::strip)
-                .filter(line -> line.startsWith("{"))
+                .filter(line -> !line.isEmpty())
                 .toList();
 
         assertFalse(jsonLines.isEmpty(), "expected JSON lines on stdout: " + output);
@@ -50,7 +52,7 @@ class ExampleIntegrationTest {
             try {
                 node = mapper.readTree(line);
             } catch (Exception e) {
-                fail("Failed to parse JSON line:\n" + line + "\n--- full stdout ---\n" + output, e);
+                fail("stdout contained a non-JSON line:\n" + line + "\n--- full stdout ---\n" + output, e);
                 return;
             }
             assertTrue(node.isObject(), "each JSON line must be an object: " + line);

@@ -158,13 +158,20 @@ public class JsonAppender extends OutputStreamAppender<ILoggingEvent> {
      * {@link EventSnapshotHandler} implementation, for logback.xml:
      * <pre>{@code
      * <appender name="JSON" class="hr.hrg.dialog.logback.JsonAppender">
-     *     <eventSnapshotHandler>com.example.MySnapshotCollector</eventSnapshotHandler>
+     *     <eventSnapshotHandlerClass>com.example.MySnapshotCollector</eventSnapshotHandlerClass>
      * </appender>
      * }</pre>
      * A {@code null} or blank value disables the hook (resets to
      * {@link NoopEventSnapshotHandler#INSTANCE}).
+     * <p>
+     * This deliberately uses its own property name
+     * ({@code eventSnapshotHandlerClass}) rather than a second
+     * {@code setEventSnapshotHandler} overload: two setters for one property make
+     * logback's {@code BeanDescriptionFactory} emit a WARN status, and any
+     * WARN/ERROR status triggers logback's LOGBACK-292 fallback, which dumps the
+     * entire configuration status list to stdout and corrupts the JSON stream.
      */
-    public void setEventSnapshotHandler(String handlerClassName) {
+    public void setEventSnapshotHandlerClass(String handlerClassName) {
         this.eventSnapshotHandler = instantiateEventHandler(handlerClassName);
     }
 
@@ -211,7 +218,7 @@ public class JsonAppender extends OutputStreamAppender<ILoggingEvent> {
             return handler;
         } catch (ReflectiveOperationException e) {
             throw new IllegalArgumentException(
-                    "Cannot instantiate eventSnapshotHandler class " + handlerClassName, e);
+                    "Cannot instantiate eventSnapshotHandlerClass " + handlerClassName, e);
         }
     }
 
@@ -241,6 +248,14 @@ public class JsonAppender extends OutputStreamAppender<ILoggingEvent> {
         eventBuffer.setPosition(pos + 1);
         // One bulk write of the whole event (buffer reuses its array across events).
         eventBuffer.writeTo(activeStreamLoc);
+        // logback hands file appenders a buffered stream (ResilientFileOutputStream
+        // over an 8 KiB BufferedOutputStream) and this override bypasses
+        // OutputStreamAppender's own per-event flush, so flush here to keep the
+        // standard immediateFlush=true semantics: the event reaches the real file
+        // in the same pass, and is never stranded in the buffer across an exit.
+        if (isImmediateFlush()) {
+            activeStreamLoc.flush();
+        }
     }
 
 }

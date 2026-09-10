@@ -46,3 +46,6 @@ logs/
 # Environment
 .env
 .env.local
+
+# extras
+.exp
