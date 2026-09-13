@@ -13,7 +13,7 @@ Logback recognizes the following suffixes out of the box:
 |---------|--------------------------|------------------------------------------|
 | `.gz`   | `GZCompressionStrategy`  | Default for most rollover patterns       |
 | `.zip`  | `ZipCompressionStrategy`  | Each archive is a separate ZIP entry     |
-| `.xz`   | `XZCompressionStrategy`  | Best compression ratio, slower throughput|
+| `.xz`   | `XZCompressionStrategy`  | Best compression ratio, slower throughput; needs the `org.tukaani:xz` library |
 
 ## XZ — The Compression-Ratio Champion
 
@@ -60,11 +60,10 @@ usually acceptable unless you roll extremely frequently (sub-second intervals).
 
 ## Dependency
 
-Logback's `XZCompressionStrategy` requires `org.tukaani:xz` on the classpath. The
-`dia-log-logback` module bundles this dependency transitively — no extra POM entry
-is needed when using `JsonAppenderRolling`.
-
-If you use Logback directly, add it explicitly:
+XZ is a built-in but **optional** Logback feature: `XZCompressionStrategy` ships
+with Logback ≥1.5.18, but the `org.tukaani:xz` library is not a transitive
+dependency of Logback, and `dia-log-logback` does not bundle it. If you use a
+`.xz` `fileNamePattern`, add the dependency to your own project:
 
 ```xml
 <dependency>

@@ -42,9 +42,9 @@
 
         <!--
             Required for XZ compression of rotated logs. Logback 1.5.18+ has native
-            XZ support (XZCompressionStrategy) but needs the org.tukaani:xz library
-            on the classpath. dia-log-logback already bundles this dependency, so
-            this is only needed if you use the example standalone.
+            XZ support (XZCompressionStrategy), but it is optional: the
+            org.tukaani:xz library is not bundled by Logback or by dia-log-logback,
+            so this example declares it directly.
         -->
         <dependency>
             <groupId>org.tukaani</groupId>

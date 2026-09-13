@@ -18,7 +18,7 @@ SLF4J 2.0 API, so you can migrate incrementally — one logger or one module at 
 </dependency>
 ```
 
-`dia-log-logback` brings `logback-classic`, Jackson 3 (`tools.jackson`), and `xz`.
+`dia-log-logback` brings `logback-classic` and Jackson 3 (`tools.jackson`).
 Requires **Java 25+**.
 
 ## Step 2 — Swap the logger type
@@ -102,6 +102,11 @@ Point logback at `JsonAppender` (console) or `JsonAppenderRolling` (file + XZ ro
 
 No `<encoder>` is required — the appender writes JSON directly and installs a no-op
 encoder itself when none is configured.
+
+XZ rotation is a built-in but **optional** Logback feature: the `XZCompressionStrategy`
+ships with Logback, but the `org.tukaani:xz` library is not bundled by Logback or by
+`dia-log-logback` — add it to your dependencies when you use a `.xz` `fileNamePattern`.
+Without it, Logback warns and falls back to GZIP (`.gz`).
 
 Each log event becomes one JSON line (`ts`, `level`, `logger`, `thread`, `msg`, flat KV
 and MDC fields, and for exceptions `errClass`, `errMessage`, `stack`, `errHash`).

@@ -8,7 +8,7 @@ Practical usage patterns for `dia-log-core` + `dia-log-logback`. The example mod
 - **Java 25+** (enforced by the Maven Enforcer)
 - Maven Central artifacts:
   - `hr.hrg.dialog:dia-log-core`
-  - `hr.hrg.dialog:dia-log-logback` (brings `logback-classic`, Jackson 3, `xz`)
+  - `hr.hrg.dialog:dia-log-logback` (brings `logback-classic` and Jackson 3)
 - Optional, for the zero-allocation fast paths:
   `--add-opens java.base/java.lang=ALL-UNNAMED` (see `doc/wyhash64-zero-allocation.md`).
 
@@ -48,6 +48,22 @@ no-op encoder itself when none is configured. Rolling file with XZ-compressed ar
 ```
 
 The active `<file>` must **not** end in `.xz` — only the archived `fileNamePattern` uses it.
+
+XZ compression is a built-in but **optional** Logback feature (native since 1.5.18): the
+`XZCompressionStrategy` ships with Logback, but the `org.tukaani:xz` library is not
+bundled by Logback or by `dia-log-logback`. To use a `.xz` `fileNamePattern`, add the
+dependency to your application:
+
+```xml
+<dependency>
+    <groupId>org.tukaani</groupId>
+    <artifactId>xz</artifactId>
+    <version>1.12</version>
+</dependency>
+```
+
+Without it, Logback logs a warning and falls back to GZIP (rewriting `.xz` to `.gz`).
+The `.gz` and `.zip` suffixes need no extra dependency.
 
 ## 2. Structured key/value pairs
 

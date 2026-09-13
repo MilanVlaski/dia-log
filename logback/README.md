@@ -88,9 +88,10 @@ rolling policy's `fileNamePattern` ends with `.xz`, Logback automatically compre
 the rotated file using its built-in `XZCompressionStrategy` (which uses the
 `org.tukaani.xz` library).
 
-The `dia-log-logback` module already bundles the `org.tukaani:xz` dependency, so no
-extra dependency is needed when using this module. If you use Logback directly
-(without `dia-log-logback`), add the dependency yourself:
+XZ is a built-in but **optional** Logback feature: the `XZCompressionStrategy` ships
+with Logback, but the `org.tukaani:xz` library is not a transitive dependency of
+Logback, and `dia-log-logback` does not bundle it. If you use a `.xz`
+`fileNamePattern`, add the dependency yourself:
 
 ```xml
 <dependency>
