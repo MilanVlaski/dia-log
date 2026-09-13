@@ -364,13 +364,13 @@ so a release version lives in exactly one place. To bump it:
 ## Publishing
 
 `dia-log-core` and `dia-log-logback` are published to Maven Central via the
-Central Portal. The `dia-log-example` module is not published. See
-[`PUBLISHING.md`](PUBLISHING.md) for the full instructions and a GitHub Actions
-workflow for automated releases.
+Central Portal, strictly manually from a local machine. The `dia-log-example`
+module is not published. See [`PUBLISHING.md`](PUBLISHING.md) for the full
+instructions.
 
 ```bash
 # One-time release (requires GPG key + Central Portal token in ~/.m2/settings.xml)
-mvn clean deploy -DskipTests
+mvn clean deploy -pl core,logback -am -DskipTests -Dgpg.skip=false
 ```
 
 ## Requirements

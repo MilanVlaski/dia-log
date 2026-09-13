@@ -3,7 +3,9 @@
 This project publishes `dia-log-core` and `dia-log-logback` to Maven Central via the
 [Central Portal](https://central.sonatype.com) using the
 [`central-publishing-maven-plugin`](https://central.sonatype.org/publish/publish-portal-maven/).
-The `dia-log-example` module is **not** published.
+Publishing is **strictly manual**: a release is run from a local machine with the
+steps below; there is no automated CI release. The `dia-log-example` module is
+**not** published.
 
 ## Prerequisites
 
@@ -52,7 +54,6 @@ The `dia-log-example` module is **not** published.
     ```
 
     > **Security note:** never commit `settings.xml` or tokens to the repository.
-    > A `.github/workflows` release uses GitHub secrets instead (see below).
 
 ### Windows: avoid the GPG passphrase prompt stall
 
@@ -108,24 +109,6 @@ auto-publishes them (because `autoPublish` is `true`).
 
 If you prefer to review before publishing, set `-DautoPublish=false` and
 trigger publishing from the Central Portal UI.
-
-## Automated releases (GitHub Actions)
-
-A `.github/workflows/publish.yml` workflow is included. It runs on a manually
-dispatched release and requires the following repository secrets:
-
-| Secret | Description |
-|--------|-------------|
-| `CENTRAL_USERNAME` | Central Portal token username |
-| `CENTRAL_PASSWORD` | Central Portal token password |
-| `GPG_PRIVATE_KEY` | ASCII-armored private GPG key |
-| `GPG_PASSPHRASE` | GPG key passphrase |
-
-The workflow:
-1. Checks out the code and sets up JDK 25.
-2. Imports the GPG key.
-3. Runs `mvn deploy` with the token and signing credentials wired through
-   Maven settings.
 
 ## Versioning
 
