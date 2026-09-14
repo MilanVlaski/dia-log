@@ -44,6 +44,10 @@ go"; this one explains.
 4. [04-number-writing.md](04-number-writing.md) — bufferless, VarHandle digit writing
 5. [05-string-escaping.md](05-string-escaping.md) — SWAR word scans and length bands
 6. [06-benchmarking.md](06-benchmarking.md) — measuring, comparing, and verifying
+7. [07-bufferless-varhandle-number-writing.md](07-bufferless-varhandle-number-writing.md) — direct buffer number writing, no scratch
+8. [08-packed-word-varhandle-stores.md](08-packed-word-varhandle-stores.md) — full-store/partial-advance overwrite trick
+9. [09-jeaiii-fast-writer.md](09-jeaiii-fast-writer.md) — division-free int/long writer
+10. [10-no-grow-contracts.md](10-no-grow-contracts.md) — fixed-capacity buffers, negated-position writers
 
 ## The core principles
 
