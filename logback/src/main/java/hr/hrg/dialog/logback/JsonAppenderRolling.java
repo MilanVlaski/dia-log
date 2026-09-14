@@ -3,6 +3,7 @@ package hr.hrg.dialog.logback;
 import javax.annotation.concurrent.ThreadSafe;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.rolling.LengthCounter;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import hr.hrg.dialog.core.ReusableByteArrayOutputStream;
 import tools.jackson.databind.ObjectMapper;
@@ -173,15 +174,19 @@ public class JsonAppenderRolling extends RollingFileAppender<ILoggingEvent> {
         }
 
         // Update the rolling-policy in-memory byte counter.
-        // RollingFileAppender.updateByteCount(byte[]) calls incrementByteCount(arr.length),
-        // so we must pass an array whose length matches the payload we just wrote.
-        // The copy is small (the event itself, ~300 B, not the 16 MiB buffer).
         // The guard is needed for callers that exercise writeOut without a
         // rolling policy (e.g. direct ByteArrayOutputStream tests).
         if (getRollingPolicy() != null) {
-            int bytesWritten = eventBuffer.size();
-            updateByteCount(Arrays.copyOf(eventBuffer.buffer(), bytesWritten));
+            incrementByteCount(eventBuffer.size());
         }
     }
 
+    void incrementByteCount(long increment) {
+        if(increment <= 0) return;
+        LengthCounter lengthCounter = getTriggeringPolicy().getLengthCounter();
+        if (lengthCounter == null)
+            return;
+
+        lengthCounter.add(increment);
+    }
 }
