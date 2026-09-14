@@ -1,8 +1,9 @@
 # 003: Automatic MDC cleanup via wrapper
 
-* **Status:** Not accepted
+* **Status:** Declined
 * **Date:** 2026-07-26
 * **Implementation Status:** Not implemented
+* **Decision Date:** 2026-09-26
 
 ## Context
 
@@ -28,14 +29,25 @@ The proposed (but not implemented) design was:
 2. The key is tracked in a `contextKeys` list.
 3. After every `log()` call, `closeContext()` is invoked, which removes all tracked keys from MDC via `MDC.remove(key)`.
 
-## Why Not Accepted
+## Why Declined
 
-The feature was not implemented. Key-value pairs added via `addKeyValue()` in `LoggingEventBuilderWrapperBase` are delegated directly to the underlying SLF4J builder, which handles them as statement-scoped key-value pairs (not MDC entries). MDC remains a separate thread-local mechanism managed by the application code.
+The feature was **declined** as a deliberate design decision. MDC management is intentionally left to application code:
+
+1. **MDC is SLF4J's responsibility:** SLF4J already provides `MDC.clear()` for cleanup. Dia-Log should not add another layer of management.
+2. **Statement-scoped KVPs are the primary mechanism:** The library's main value proposition is statement-scoped key-value pairs that auto-cleanup. MDC is an optional thread-local feature managed separately.
+3. **No breaking change benefit:** Implementing this would require tracking MDC keys in the wrapper, adding complexity without significant benefit to the core design.
+4. **Application code can use patterns:** Common patterns like try-finally blocks around `MDC.put()` are straightforward and give full control.
+5. **Explicit over implicit:** Requiring developers to explicitly call `MDC.clear()` when they need thread-local cleanup is better than automatic cleanup that might hide issues.
+
+This is a deliberate design decision, not an oversight. The library prioritizes statement-scoped KVPs over MDC management and keeps MDC handling simple and explicit.
+
+## Consequences
 
 ## Consequences
 
 * **Positive:** No performance overhead from MDC put/remove operations; MDC is managed by the application as SLF4J intended.
 * **Negative:** Developers must manage MDC lifecycle manually via `MDC.put()`/`MDC.remove()`/`MDC.clear()` when using thread-local context.
+* **Future consideration:** If automatic MDC cleanup becomes a strong requirement from users, it could be added as an optional feature (e.g., `MDCAdapter` implementation).
 
 ## References
 
