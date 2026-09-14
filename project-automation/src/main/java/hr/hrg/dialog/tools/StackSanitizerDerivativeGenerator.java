@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Marker-driven boilerplate generator for the dia-log project.
@@ -35,7 +37,9 @@ import java.util.List;
  * Lines without a preceding marker are shared and kept in every variant. Code not needed in a
  * variant is commented out in the generated derivative (never deleted). The generator also applies
  * the input/accessor substitutions for logback and removes the {@code Predicate} parameter for the
- * no-filter variants.
+ * no-filter variants. Every expected substitution is verified and fails loudly
+ * (no silent no-ops) if the canonical source has drifted from the generator's
+ * expectations.
  * <p>
  * Usage from the repository root:
  * <pre>{@code
@@ -67,15 +71,24 @@ public final class StackSanitizerDerivativeGenerator {
         new StackSanitizerDerivativeGenerator(root).generateAll();
     }
 
-    /** Reads the source of truth and regenerates all three derivatives. */
+    /** Reads the source of truth and regenerates all three derivatives in the repository. */
     public void generateAll() throws IOException {
+        writeAll(repoRoot);
+    }
+
+    /**
+     * Regenerates all three derivatives from the canonical source, writing them under
+     * {@code outputRoot} (the repository root by default). Target paths are repo-relative,
+     * so the same relative layout is produced under any output root.
+     */
+    public void writeAll(Path outputRoot) throws IOException {
         Path source = sourceSanitizerPath();
         String sourceText = Files.readString(source, StandardCharsets.UTF_8);
         String methods = extractMethods(sourceText);
 
-        write(coreWriterPath(), assemble(CORE, derive(CORE, methods)));
-        write(logbackSanitizerPath(), assemble(SANITIZER, derive(SANITIZER, methods)));
-        write(logbackWriterPath(), assemble(WRITER, derive(WRITER, methods)));
+        write(outputRoot.resolve(CORE_WRITER_REL), assemble(CORE, derive(CORE, methods)));
+        write(outputRoot.resolve(LB_SANITIZER_REL), assemble(SANITIZER, derive(SANITIZER, methods)));
+        write(outputRoot.resolve(LB_WRITER_REL), assemble(WRITER, derive(WRITER, methods)));
 
         System.out.println("Generated 3 derivative classes from " + source);
     }
@@ -84,20 +97,17 @@ public final class StackSanitizerDerivativeGenerator {
     // Paths
     // ------------------------------------------------------------------
 
+    private static final String SOURCE_REL =
+            "core/src/main/java/hr/hrg/dialog/core/JavaStackSanitizer.java";
+    private static final String CORE_WRITER_REL =
+            "core/src/main/java/hr/hrg/dialog/core/JavaStackTraceWriter.java";
+    private static final String LB_SANITIZER_REL =
+            "logback/src/main/java/hr/hrg/dialog/logback/JavaStackSanitizerLogback.java";
+    private static final String LB_WRITER_REL =
+            "logback/src/main/java/hr/hrg/dialog/logback/JavaStackWriterLogback.java";
+
     private Path sourceSanitizerPath() {
-        return repoRoot.resolve("core/src/main/java/hr/hrg/dialog/core/JavaStackSanitizer.java");
-    }
-
-    private Path coreWriterPath() {
-        return repoRoot.resolve("core/src/main/java/hr/hrg/dialog/core/JavaStackTraceWriter.java");
-    }
-
-    private Path logbackSanitizerPath() {
-        return repoRoot.resolve("logback/src/main/java/hr/hrg/dialog/logback/JavaStackSanitizerLogback.java");
-    }
-
-    private Path logbackWriterPath() {
-        return repoRoot.resolve("logback/src/main/java/hr/hrg/dialog/logback/JavaStackWriterLogback.java");
+        return repoRoot.resolve(SOURCE_REL);
     }
 
     // ------------------------------------------------------------------
@@ -331,53 +341,84 @@ public final class StackSanitizerDerivativeGenerator {
         String text = methods;
         if (isLogback(variant)) {
             // Adapt input type and throwable accessor for logback proxy shape.
-            text = text.replace("StackTraceElement[]", "StackTraceElementProxy[]");
-            text = text.replace("Throwable rootCause", "IThrowableProxy rootCause");
+            text = requireLiteral(text, "StackTraceElement[]", "StackTraceElementProxy[]", variant);
+            text = requireLiteral(text, "Throwable rootCause", "IThrowableProxy rootCause", variant);
             // Fallback blocks index into the proxy array; get the underlying StackTraceElement.
-            text = text.replace("StackTraceElement el = trace[i];",
-                    "StackTraceElement el = trace[i].getStackTraceElement();");
+            text = requireLiteral(text, "StackTraceElement el = trace[i];",
+                    "StackTraceElement el = trace[i].getStackTraceElement();", variant);
             if (SANITIZER.equals(variant)) {
                 // The logback sanitizer does not declare the byte constants; qualify them.
-                text = text.replaceAll("\\bNEWLINE_JSON_BYTES\\b", "JavaStackSanitizer.NEWLINE_JSON_BYTES");
-                text = text.replaceAll("\\bNEWLINE_BYTES\\b", "JavaStackSanitizer.NEWLINE_BYTES");
-                text = text.replaceAll("\\bDOT_BYTES\\b", "JavaStackSanitizer.DOT_BYTES");
-                text = text.replaceAll("\\bLAMBDA_METHOD_BYTES\\b", "JavaStackSanitizer.LAMBDA_METHOD_BYTES");
-                text = text.replaceAll("\\bLAMBDA_SUFFIX_FOR_CLASS\\b", "JavaStackSanitizer.LAMBDA_SUFFIX_FOR_CLASS");
-                text = text.replaceAll("\\bLAMBDA_PREFIX_FOR_METHOD\\b", "JavaStackSanitizer.LAMBDA_PREFIX_FOR_METHOD");
-                text = text.replaceAll("\\bstringWriteStrategy\\b", "JavaStackSanitizer.stringWriteStrategy");
+                text = requireRegexReplace(text, "\\bNEWLINE_JSON_BYTES\\b", "JavaStackSanitizer.NEWLINE_JSON_BYTES", variant);
+                text = requireRegexReplace(text, "\\bNEWLINE_BYTES\\b", "JavaStackSanitizer.NEWLINE_BYTES", variant);
+                text = requireRegexReplace(text, "\\bDOT_BYTES\\b", "JavaStackSanitizer.DOT_BYTES", variant);
+                text = requireRegexReplace(text, "\\bLAMBDA_METHOD_BYTES\\b", "JavaStackSanitizer.LAMBDA_METHOD_BYTES", variant);
+                text = requireRegexReplace(text, "\\bLAMBDA_SUFFIX_FOR_CLASS\\b", "JavaStackSanitizer.LAMBDA_SUFFIX_FOR_CLASS", variant);
+                text = requireRegexReplace(text, "\\bLAMBDA_PREFIX_FOR_METHOD\\b", "JavaStackSanitizer.LAMBDA_PREFIX_FOR_METHOD", variant);
+                text = requireRegexReplace(text, "\\bstringWriteStrategy\\b", "JavaStackSanitizer.stringWriteStrategy", variant);
             } else { // WRITER
                 // The logback writer declares the byte constants but not stringWriteStrategy.
-                text = text.replaceAll("\\bstringWriteStrategy\\b", "JavaStackTraceWriter.stringWriteStrategy");
+                text = requireRegexReplace(text, "\\bstringWriteStrategy\\b", "JavaStackTraceWriter.stringWriteStrategy", variant);
             }
         }
         if (isNoFilter(variant)) {
             // Drop the Predicate filter parameter from every method except fingerprint.
+            // Fails loudly if nothing was removed: the canonical source has drifted.
+            String before = text;
             text = removeFilterParamsExceptFingerprint(text);
+            if (text.equals(before)) {
+                throw new IllegalStateException("StackSanitizerDerivativeGenerator: no "
+                        + "Predicate<String> filter parameters were removed in variant "
+                        + variant + " (canonical source has drifted from the generator's expectations)");
+            }
             // The fingerprint method's addFromTrace call must also drop the filter argument.
-            text = text.replace(
+            text = requireLiteral(text,
                     "addFromTrace(rootCause.getStackTrace(), filter, stream)",
-                    "addFromTrace(rootCause.getStackTrace(), stream)");
+                    "addFromTrace(rootCause.getStackTrace(), stream)", variant);
             // The core writer keeps a local addFromTraceElement helper; make it private.
             if (CORE.equals(variant)) {
-                text = text.replace(
+                text = requireLiteral(text,
                         "public static void addFromTraceElement",
-                        "private static void addFromTraceElement");
+                        "private static void addFromTraceElement", variant);
             }
             // Delegation calls inside no-filter method bodies must drop the filter argument.
-            text = text.replace(
+            text = requireLiteral(text,
                     "addFromTraceToOutputStreamWithNewline(trace, filter,out, NEWLINE_BYTES)",
-                    "addFromTraceToOutputStreamWithNewline(trace, out, NEWLINE_BYTES)");
-            text = text.replace(
+                    "addFromTraceToOutputStreamWithNewline(trace, out, NEWLINE_BYTES)", variant);
+            text = requireLiteral(text,
                     "addFromTraceToOutputStreamWithNewline(trace, filter,out, NEWLINE_JSON_BYTES)",
-                    "addFromTraceToOutputStreamWithNewline(trace, out, NEWLINE_JSON_BYTES)");
-            text = text.replace(
-                    "addFromTraceToOutputStreamJsonAndFingerprint(trace, filter, out, throwableClassName, stream)",
-                    "addFromTraceToOutputStreamJsonAndFingerprint(trace, out, throwableClassName, stream)");
-            text = text.replace(
+                    "addFromTraceToOutputStreamWithNewline(trace, out, NEWLINE_JSON_BYTES)", variant);
+            text = requireLiteral(text,
                     "addFromTraceToOutputStreamWithNewlineAndFingerprint(trace, filter, out, NEWLINE_JSON_BYTES, throwableClassName, stream)",
-                    "addFromTraceToOutputStreamWithNewlineAndFingerprint(trace, out, NEWLINE_JSON_BYTES, throwableClassName, stream)");
+                    "addFromTraceToOutputStreamWithNewlineAndFingerprint(trace, out, NEWLINE_JSON_BYTES, throwableClassName, stream)", variant);
         }
         return text;
+    }
+
+    /**
+     * Applies a required literal substitution, failing loudly if the expected
+     * literal is missing: a silent no-op would let the canonical source drift
+     * from the generator's expectations.
+     */
+    private static String requireLiteral(String text, String from, String to, String variant) {
+        if (!text.contains(from)) {
+            throw new IllegalStateException("StackSanitizerDerivativeGenerator: expected literal not found in variant "
+                    + variant + " (canonical source has drifted from the generator's expectations): " + from);
+        }
+        return text.replace(from, to);
+    }
+
+    /** Applies a required regex substitution, failing loudly if the pattern is absent. */
+    private static String requireRegexReplace(String text, String regex, String to, String variant) {
+        int matches = 0;
+        Matcher m = Pattern.compile(regex).matcher(text);
+        while (m.find()) {
+            matches++;
+        }
+        if (matches == 0) {
+            throw new IllegalStateException("StackSanitizerDerivativeGenerator: expected pattern not found in variant "
+                    + variant + " (canonical source has drifted from the generator's expectations): " + regex);
+        }
+        return text.replaceAll(regex, to);
     }
 
     private static boolean isLogback(String variant) {

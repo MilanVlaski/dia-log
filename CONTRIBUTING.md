@@ -81,6 +81,3 @@ mvn -pl project-automation compile exec:java \
 1. Branch from `main`, open a PR back to `main`.
 2. Run `mvn clean verify -Dgpg.skip=true` locally before pushing.
 3. Add a `CHANGELOG.md` entry under `[Unreleased]`.
-4. Keep the plans folder honest: if you close a gap listed in
-   `plans/analysis-report.md` or `plans/critical-analysis.md`, update the item's
-   status in the same PR.

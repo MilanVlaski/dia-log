@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Tests for concrete {@link DiaLogger} behavior: wrapper creation, prefix handling,
  * {@link DiaLoggerBase#addKeyValues}, and disabled-level no-op behavior.
- * (Planned coverage item from plans/analysis-report.md §11.)
+ * (Planned coverage item from the former plans/analysis-report.md §11.)
  */
 class DiaLoggerTest {
 

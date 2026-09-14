@@ -17,3 +17,4 @@ This directory contains Architecture Decision Records (ADRs) for the Dia-Log pro
 | [009](009-consoleappenderdev.md)                   | ConsoleAppenderDev for development                | Superseded   | Removed         |
 | [010](010-traceid-generation.md)                   | TraceId generation with timestamp                 | Accepted     | Implemented     |
 | [011](011-noop-wrapper-pattern.md)                 | No-op wrapper pattern for disabled levels         | Accepted     | Implemented     |
+| [012](012-remove-key-dedup.md)                     | Remove key dedup between KV pairs and MDC         | Accepted     | Implemented     |

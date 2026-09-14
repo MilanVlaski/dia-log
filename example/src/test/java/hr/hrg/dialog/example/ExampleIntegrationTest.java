@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Runs the example {@link Main} end-to-end and verifies the console JSON output:
  * every line is valid JSON, all enabled levels appear, structured key/value pairs
  * are present, and exception events carry the {@code errHash} fingerprint.
- * (Planned coverage item from plans/analysis-report.md §11.)
+ * (Planned coverage item from the former plans/analysis-report.md §11.)
  */
 class ExampleIntegrationTest {
 

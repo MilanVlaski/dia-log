@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Edge cases for {@link LoggingEventBuilderWrapperBase}: null keys/values,
  * supplier returning null, multiple {@code log()} calls, and fluent delegation.
- * (Planned coverage item from plans/analysis-report.md §11.)
+ * (Planned coverage item from the former plans/analysis-report.md §11.)
  */
 class LoggingEventBuilderWrapperBaseTest {
 

@@ -1,7 +1,7 @@
 # T12 — Fixed-capacity no-grow event buffer with negated-position writers
 
-**Source technique:** Novel dia-log pattern (buffer management). Planned in
-[`plans/no-grow-jsonlogwriter-placeholder.md`](../../plans/no-grow-jsonlogwriter-placeholder.md)
+**Source technique:** Novel dia-log pattern (buffer management). Planned in the
+former `plans/no-grow-jsonlogwriter-placeholder.md` (plans folder since removed)
 and implemented across its steps 1–5; this record documents the completed
 foundation (steps 1–4) and the event assembly (step 5) that builds on it.
 

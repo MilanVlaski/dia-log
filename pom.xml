@@ -239,7 +239,7 @@
                                 <rule>
                                     <element>BUNDLE</element>
                                     <limits>
-                                        <!-- Targets from plans/dia-log-improvements.md §3.3 -->
+                                        <!-- Bundle coverage floor: 80% line / 70% branch (dia-log improvement targets) -->
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>

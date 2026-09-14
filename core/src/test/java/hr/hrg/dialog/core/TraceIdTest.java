@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for {@link TraceId} — generation, uniqueness, byte/string consistency,
- * and span-id non-zero guarantee. (Planned coverage item from plans/analysis-report.md §11.)
+ * and span-id non-zero guarantee. (Planned coverage item from the former
+ * plans/analysis-report.md §11.)
  */
 class TraceIdTest {
 

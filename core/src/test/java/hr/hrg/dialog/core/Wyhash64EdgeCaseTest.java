@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Edge cases for {@link Wyhash64}: empty input, single byte/char, large input,
  * seed 0 vs non-zero, and cross-input-type consistency.
- * (Planned coverage item from plans/analysis-report.md §11.)
+ * (Planned coverage item from the former plans/analysis-report.md §11.)
  */
 class Wyhash64EdgeCaseTest {
 
