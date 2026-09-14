@@ -171,6 +171,17 @@ public class JsonAppenderRolling extends RollingFileAppender<ILoggingEvent> {
         if (isImmediateFlush()) {
             activeStreamLoc.flush();
         }
+
+        // Update the rolling-policy in-memory byte counter.
+        // RollingFileAppender.updateByteCount(byte[]) calls incrementByteCount(arr.length),
+        // so we must pass an array whose length matches the payload we just wrote.
+        // The copy is small (the event itself, ~300 B, not the 16 MiB buffer).
+        // The guard is needed for callers that exercise writeOut without a
+        // rolling policy (e.g. direct ByteArrayOutputStream tests).
+        if (getRollingPolicy() != null) {
+            int bytesWritten = eventBuffer.size();
+            updateByteCount(Arrays.copyOf(eventBuffer.buffer(), bytesWritten));
+        }
     }
 
 }
