@@ -35,7 +35,7 @@
         <connection>scm:git:git://github.com/hrgdavor/dia-log.git</connection>
         <developerConnection>scm:git:ssh://git@github.com:hrgdavor/dia-log.git</developerConnection>
         <url>https://github.com/hrgdavor/dia-log</url>
-        <tag>v1.0.0</tag>
+        <tag>v1.0.1</tag>
     </scm>
 
     <modules>

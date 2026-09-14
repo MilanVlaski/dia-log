@@ -37,11 +37,6 @@
             <artifactId>jmh-core</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-generator-annprocess</artifactId>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>

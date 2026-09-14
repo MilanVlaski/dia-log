@@ -4,6 +4,8 @@
 
 Strictly use .exp fodler to place outputs caught by commandline when chosing where to store those temporary files.
 
+Before deleting a tracked file as "scratch output", verify it is not referenced from the README, the docs, or build scripts. An unusual location is not proof of scratch status: `src/build/version.js` is an integral version-sync script (see File Locations Reference), not a command-line capture.
+
 
 ## Documentation Discipline — Early Phase (No External Users)
 
@@ -306,3 +308,10 @@ Get-ChildItem core\target\surefire-reports,logback\target\surefire-reports -Filt
 **Benchmarks**:
 - `core/src/test/java/hr/hrg/dialog/core/*Benchmark.java`
 - `logback/src/test/java/hr/hrg/dialog/logback/*Benchmark.java`
+
+**Build tools**:
+- `src/build/version.js` — integral project file (bun script), **not** scratch output.
+  Syncs the root pom's `<version>` (the single source of truth) into every module's
+  `<parent><version>`; run `bun src/build/version.js` after editing the root pom
+  (see README "Versioning"). The top-level `src/` is a build-tool directory, not a
+  Maven module — do not treat its contents as scratch.
