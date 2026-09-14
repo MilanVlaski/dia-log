@@ -334,7 +334,7 @@ public class JsonLogWriter {
         if (mdcMap != null && !mdcMap.isEmpty()) {
             for (Map.Entry<String, String> entry : mdcMap.entrySet()) {
                 String key = entry.getKey();
-                if (key != null && !isReserved(key)) {
+                if (key != null) {
                     int fieldStart = pos;                   // before the ','
                     if (pos >= limit) {
                         return writeTooLargeAndClose(buf, fieldStart);
@@ -512,13 +512,6 @@ public class JsonLogWriter {
     protected int writeExtraFields(ILoggingEvent event, byte[] buf, int pos, int limit,
             List<KeyValuePair> pairs, Map<String, String> mdcMap) {
         return pos;  // no-op
-    }
-
-    private boolean isReserved(String key) {
-        return switch (key) {
-            case "ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage" -> true;
-            default -> false;
-        };
     }
 
     // =========================================================================

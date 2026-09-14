@@ -18,3 +18,4 @@ This directory contains Architecture Decision Records (ADRs) for the Dia-Log pro
 | [010](010-traceid-generation.md)                   | TraceId generation with timestamp                 | Accepted     | Implemented     |
 | [011](011-noop-wrapper-pattern.md)                 | No-op wrapper pattern for disabled levels         | Accepted     | Implemented     |
 | [012](012-remove-key-dedup.md)                     | Remove key dedup between KV pairs and MDC         | Accepted     | Implemented     |
+ | [013](013-allow-duplicate-top-level-keys.md)       | Allow duplicate top-level JSON keys (remove reserved-name skipping) | Accepted | Implemented |

@@ -89,7 +89,7 @@ public class JsonLogWriterClassic {
 
             if (mdcMap != null && !mdcMap.isEmpty()) {
                 for (Map.Entry<String, String> entry : mdcMap.entrySet()) {
-                    if (entry.getKey() != null && !isReserved(entry.getKey())) {
+                    if (entry.getKey() != null) {
                         gen.writeName(entry.getKey());
                         gen.writeString(entry.getValue());
                     }
@@ -132,13 +132,6 @@ public class JsonLogWriterClassic {
             // failures through their StatusManager (AppenderBase.doAppend -> addError).
             throw e;
         }
-    }
-
-    private boolean isReserved(String key) {
-        return switch (key) {
-            case "ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage" -> true;
-            default -> false;
-        };
     }
 
     protected void addKey(JsonGenerator gen, String key, Object value) throws IOException {

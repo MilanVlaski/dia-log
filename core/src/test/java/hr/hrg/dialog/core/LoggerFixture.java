@@ -21,6 +21,7 @@ final class LoggerFixture {
         private final String name;
         String lastMessage;
         final List<String> allMessages = new ArrayList<>();
+        Throwable lastCause;
 
         TestLogger(String name) {
             this.name = name;
@@ -28,6 +29,10 @@ final class LoggerFixture {
 
         String lastMessage() {
             return lastMessage;
+        }
+
+        Throwable lastCause() {
+            return lastCause;
         }
 
         @Override
@@ -64,6 +69,7 @@ final class LoggerFixture {
             return new LoggingEventBuilder() {
                 @Override
                 public LoggingEventBuilder setCause(Throwable t) {
+                    lastCause = t;
                     return this;
                 }
 

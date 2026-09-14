@@ -77,7 +77,7 @@ public final class JsonLogWriterStream {
 
         if (mdcMap != null && !mdcMap.isEmpty()) {
             for (Map.Entry<String, String> entry : mdcMap.entrySet()) {
-                if (entry.getKey() != null && !isReserved(entry.getKey())) {
+                if (entry.getKey() != null) {
                     writeFieldPrefixRawKey(out, entry.getKey());
                     EscapedJsonStringWriter.writeJsonStringOrNull(out, entry.getValue());
                 }
@@ -143,13 +143,6 @@ public final class JsonLogWriterStream {
         out.write(',');
         EscapedJsonStringWriter.writeJsonStringOrNull(out, key);
         out.write(':');
-    }
-
-    private static boolean isReserved(String key) {
-        return switch (key) {
-            case "ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage" -> true;
-            default -> false;
-        };
     }
 
     protected static void addKey(OutputStream out, String key, Object value, ObjectMapper mapper) throws IOException {

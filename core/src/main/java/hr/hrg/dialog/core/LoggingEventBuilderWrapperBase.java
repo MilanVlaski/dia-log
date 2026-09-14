@@ -36,6 +36,7 @@ public class LoggingEventBuilderWrapperBase implements LoggingEventBuilder {
     protected final LoggingEventBuilder delegate;
     protected final Logger logger; // nullable — used for stackWhenTraceEnabled isTraceEnabled check
     protected boolean stackWhenTraceEnabled;
+    protected Throwable cause; // tracks a user-set cause so beforeLog() honors "only if no cause was set"
 
     /**
      * Creates a new wrapper with a Logger reference (needed for {@link #stackWhenTraceEnabled()}).
@@ -85,6 +86,7 @@ public class LoggingEventBuilderWrapperBase implements LoggingEventBuilder {
 
     @Override
     public LoggingEventBuilderWrapperBase setCause(Throwable t) {
+        cause = t;
         delegate.setCause(t);
         return this;
     }
@@ -174,10 +176,12 @@ public class LoggingEventBuilderWrapperBase implements LoggingEventBuilder {
     /**
      * If {@link #stackWhenTraceEnabled()} was called and TRACE is enabled, attach a
      * {@link Throwable} as the cause so the output shows the call stack that
-     * triggered this log. Only attaches if no cause was already set.
+     * triggered this log. Only attaches if no cause was already set via
+     * {@link #setCause(Throwable)}. (A cause set directly on the delegate through
+     * {@link #with(LogFiller)} is not tracked here.)
      */
     protected void beforeLog() {
-        if (stackWhenTraceEnabled && logger != null && logger.isTraceEnabled()) {
+        if (stackWhenTraceEnabled && logger != null && logger.isTraceEnabled() && cause == null) {
             delegate.setCause(new Throwable("stackWhenTraceEnabled"));
         }
 

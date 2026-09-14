@@ -132,8 +132,10 @@ fingerprints identically. Exclude noisy frames with `<stackTraceFilter>` on the 
 
 ## 6. MDC
 
-`MDC.put(...)` values are written as flat top-level fields (reserved names such as
-`ts`, `level`, `msg`, `errClass`, `errHash`, … are skipped):
+`MDC.put(...)` values are written as flat top-level fields, as-is. An MDC key that
+collides with a writer field name (`ts`, `level`, `msg`, `errClass`, `errHash`,
+`stack`, `prefix`, …) produces a duplicate top-level key — duplicates are allowed and
+downstream ingestion resolves them (see [ADR 013](adr/013-allow-duplicate-top-level-keys.md)):
 
 ```java
 MDC.put("requestId", "req-42");

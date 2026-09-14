@@ -28,9 +28,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   duplicate-key cases (last-wins or array semantics depending on the parser).
   This eliminates the per-event `StringHashSet` key-tracking set from the hot
   path. `StringHashSet` (`core`) and its test deleted.
+- **Reserved-name skipping of MDC keys removed** from `JsonLogWriter` (and the
+  test-side `JsonLogWriterStream` / `JsonLogWriterClassic` baselines). MDC keys
+  are now written as-is, even when they collide with a writer field name
+  (`ts`, `level`, `msg`, `errClass`, `errHash`, `stack`, `prefix`, …): duplicate
+  top-level keys are allowed and resolved at the consumer. See ADR 013.
 
 ### Changed
 
+- `LoggingEventBuilderWrapperBase.beforeLog()` now attaches the synthetic
+  `stackWhenTraceEnabled` cause only when no cause was already set: the wrapper
+  tracks the user-set cause in its `setCause` override and guards on it, so an
+  explicitly set cause (e.g. `log.atError().setCause(e).stackWhenTraceEnabled()`)
+  is no longer replaced by the synthetic trace `Throwable`. The code now matches
+  its Javadoc.
 - Fingerprint entry points in `JavaStackSanitizer`, `JavaStackTraceWriter`,
   `JavaStackSanitizerLogback`, and `JavaStackWriterLogback`
   (`fingerprint(...)`, `fingerprintFromTrace(...)`,

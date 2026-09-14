@@ -72,6 +72,24 @@ class LoggingEventBuilderWrapperBaseTest {
     }
 
     @Test
+    void stackWhenTraceEnabled_withoutCause_attachesSyntheticCause() {
+        // LoggerFixture reports isTraceEnabled() == true, so the flag attaches the
+        // synthetic cause when no user cause was set.
+        wrapper().stackWhenTraceEnabled().log("trace");
+        assertNotNull(logger.lastCause(), "synthetic trace cause must be attached");
+        assertEquals("stackWhenTraceEnabled", logger.lastCause().getMessage());
+    }
+
+    @Test
+    void stackWhenTraceEnabled_withUserCause_doesNotReplaceCause() {
+        // A user-set cause must survive: the synthetic trace cause attaches only
+        // when no cause was already set.
+        RuntimeException e = new RuntimeException("user cause");
+        wrapper().setCause(e).stackWhenTraceEnabled().log("trace");
+        assertSame(e, logger.lastCause(), "user-set cause must not be replaced by the synthetic trace cause");
+    }
+
+    @Test
     void kv_returnsThis_andDelegates() {
         LoggingEventBuilderWrapper w = wrapper();
         assertSame(w, w.kv("key", "value"));

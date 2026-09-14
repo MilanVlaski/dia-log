@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Direct tests for {@link JsonLogWriter}: field layout, JSON escaping of user-supplied
- * keys, and MDC reserved-key skipping. (Planned coverage item from the former
- * plans/analysis-report.md §11.)
+ * keys, and MDC key handling (duplicate keys are allowed, so MDC keys are written
+ * as-is). (Planned coverage item from the former plans/analysis-report.md §11.)
  */
 class JsonLogWriterTest {
 
@@ -95,18 +95,19 @@ class JsonLogWriterTest {
     }
 
     @Test
-    void mdcKeys_skipReserved() throws Exception {
+    void mdcKeys_writtenAsIs_evenWhenFieldNames() throws Exception {
         LoggingEvent event = event("reserved");
         applyIfPresent(event, "setMDCPropertyMap", new Class<?>[]{Map.class}, Map.of(
-            "msg", "should-not-appear",
+            "msg", "mdc-msg",
             "custom", "ok"
         ));
 
         String json = write(event);
 
-        assertTrue(json.contains("\"custom\":\"ok\""), "non-reserved MDC key must be present: " + json);
-        assertFalse(json.contains("\"msg\":\"should-not-appear\""),
-                "reserved key must be skipped: " + json);
+        assertTrue(json.contains("\"custom\":\"ok\""), "MDC key must be present: " + json);
+        // Duplicate keys are allowed: an MDC key that collides with a writer field
+        // name is written as-is and duplicates the writer's own field.
+        assertTrue(json.contains("\"msg\":\"mdc-msg\""), "MDC 'msg' value must be present: " + json);
     }
 
     @Test
@@ -160,21 +161,23 @@ class JsonLogWriterTest {
     }
 
     @Test
-    void mdcKeys_allReserved_areSkipped() throws Exception {
+    void mdcKeys_fieldNames_areWritten() throws Exception {
         LoggingEvent event = event("reserved2");
         Map<String, String> mdc = new LinkedHashMap<>();
-        for (String reserved : List.of("ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage")) {
-            mdc.put(reserved, "x-" + reserved);
+        for (String fieldName : List.of("ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage", "stack", "prefix")) {
+            mdc.put(fieldName, "x-" + fieldName);
         }
         mdc.put("custom", "ok");
         applyIfPresent(event, "setMDCPropertyMap", new Class<?>[]{Map.class}, mdc);
 
         String json = write(event);
 
+        // Duplicate keys are allowed: MDC keys that collide with writer field names
+        // are written as-is and duplicate the writer's own fields where present.
         assertTrue(json.contains("\"custom\":\"ok\""), "custom key must be present: " + json);
-        for (String reserved : List.of("ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage")) {
-            assertFalse(json.contains("\"" + reserved + "\":\"x-"),
-                    "reserved key must be skipped: " + reserved + " in " + json);
+        for (String fieldName : List.of("ts", "level", "logger", "thread", "msg", "errClass", "errHash", "errMessage", "stack", "prefix")) {
+            assertTrue(json.contains("\"" + fieldName + "\":\"x-" + fieldName + "\""),
+                    "MDC key must be written as-is: " + fieldName + " in " + json);
         }
     }
 

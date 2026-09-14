@@ -89,17 +89,19 @@ class JsonLogWriterClassicTest {
     }
 
     @Test
-    void mdcKeys_skipReserved() throws Exception {
+    void mdcKeys_writtenAsIs_evenWhenFieldNames() throws Exception {
         LoggingEvent event = event("reserved");
         applyIfPresent(event, "setMDCPropertyMap", new Class<?>[]{Map.class}, Map.of(
-            "msg", "should-not-appear",
+            "msg", "mdc-msg",
             "custom", "ok"
         ));
 
         String json = write(event);
 
-        assertTrue(json.contains("\"custom\":\"ok\""), "non-reserved MDC key must be present: " + json);
-        assertFalse(json.contains("\"msg\":\"should-not-appear\""), "reserved key must be skipped: " + json);
+        assertTrue(json.contains("\"custom\":\"ok\""), "MDC key must be present: " + json);
+        // Duplicate keys are allowed: an MDC key that collides with a writer field
+        // name is written as-is and duplicates the writer's own field.
+        assertTrue(json.contains("\"msg\":\"mdc-msg\""), "MDC 'msg' value must be present: " + json);
     }
 
     @Test
